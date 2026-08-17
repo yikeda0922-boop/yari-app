@@ -7,6 +7,9 @@ st.set_page_config(page_title="槍ヶ岳 登山安全判定アプリ", page_icon
 
 # タイトル
 st.title("⛰️ 槍ヶ岳 登山安全判定アプリ")
+
+# 自身で撮影した槍ヶ岳の写真を表示
+st.image("yari.jpg", caption="槍ヶ岳（標高3,180m）", use_container_width=True)
 st.write("安曇野（穂高）の気象予報を入力すると、槍ヶ岳山頂の安全度（Go / Caution / No-Go）をAIが予測します。")
 
 # 1. 学習済みモデルの読み込み
