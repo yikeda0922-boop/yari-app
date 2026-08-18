@@ -28,8 +28,8 @@ with col1:
     temp_max = st.number_input("最高気温 (℃)", value=28.0, step=0.5)
     temp_min = st.number_input("最低気温 (℃)", value=18.0, step=0.5)
 with col2:
-    wind_max = st.number_input("最大風速 (m/s)", value=4.0, step=0.5)
-    precip = st.number_input("降水量の合計 (mm)", value=0.0, step=0.5)
+    wind_max = st.slider("最大風速 (m/s)", min_value=0.0, max_value=30.0, value=4.0, step=0.5)
+    precip = st.slider("降水量の合計 (mm)", min_value=0.0, max_value=100.0, value=0.0, step=1.0)
 
 # 3. 判定ボタンと予測
 if st.button("登山安全度を判定する", type="primary"):
