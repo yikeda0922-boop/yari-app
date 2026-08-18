@@ -10,7 +10,7 @@ st.title("⛰️ 槍ヶ岳 登山安全判定アプリ")
 
 # 自身で撮影した槍ヶ岳の写真を表示
 st.image("yari.JPG", caption="槍ヶ岳（標高3,180m）", use_container_width=True)
-st.write("安曇野（穂高）の気象予報を入力すると、槍ヶ岳山頂の安全度（Go / Caution / No-Go）をAIが予測します。")
+st.write("登山口周辺（穂高）の天気予報を入力するだけで、槍ヶ岳山頂の安全度を3段階で判定します。登山計画の判断材料としてご活用ください。")
 
 # 1. 学習済みモデルの読み込み
 @st.cache_resource
