@@ -21,14 +21,14 @@ mountain = st.selectbox(
     ["槍ヶ岳 (3,180m)", "日光白根山 (2,578m)", "塔ノ岳 (1,491m)"]
 )
 
-# 2. 選択された山に応じた設定（ローカル画像ファイル指定）
+# 2. 選択された山に応じた設定
 mountain_config = {
     "槍ヶ岳 (3,180m)": {
         "model_file": "model_yari.pkl",
         "lowland_name": "安曇野（穂高）",
         "precip_name": "上高地の降水量の合計",
         "precip_label": "上高地の予想降水量 (mm)",
-        "image_file": "yari.jpg",
+        "image_candidates": ["yari.JPG", "yari.jpg", "yari.png", "yari.jpeg"],
         "caption": "槍ヶ岳（北アルプス・標高3,180m）"
     },
     "日光白根山 (2,578m)": {
@@ -36,7 +36,7 @@ mountain_config = {
         "lowland_name": "日光東町",
         "precip_name": "奥日光の降水量の合計",
         "precip_label": "奥日光の予想降水量 (mm)",
-        "image_file": "nikko.jpg",
+        "image_candidates": ["nikko.jpg", "nikko.JPG", "nikko.png", "nikko.jpeg"],
         "caption": "日光白根山（関東以北最高峰・標高2,578m）"
     },
     "塔ノ岳 (1,491m)": {
@@ -44,16 +44,22 @@ mountain_config = {
         "lowland_name": "海老名",
         "precip_name": "丹沢湖の降水量の合計",
         "precip_label": "丹沢湖の予想降水量 (mm)",
-        "image_file": "tonodake.jpg",
+        "image_candidates": ["tonodake.jpg", "tonodake.JPG", "tonodake.png", "tonodake.jpeg"],
         "caption": "塔ノ岳（丹沢山地・標高1,491m）"
     }
 }
 
 config = mountain_config[mountain]
 
-# 画像が存在すれば表示
-if os.path.exists(config["image_file"]):
-    st.image(config["image_file"], caption=config["caption"], use_container_width=True)
+# 画像ファイルの探索と表示
+found_image = None
+for img_name in config["image_candidates"]:
+    if os.path.exists(img_name):
+        found_image = img_name
+        break
+
+if found_image:
+    st.image(found_image, caption=config["caption"], use_container_width=True)
 
 # 3. モデルの読み込み
 @st.cache_resource
