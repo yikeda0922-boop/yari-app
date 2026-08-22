@@ -1,6 +1,6 @@
 import streamlit as st
 import pickle
-import pandas as pd
+import numpy as np
 import os
 
 # ページ基本設定
@@ -26,7 +26,6 @@ mountain_config = {
     "槍ヶ岳 (3,180m)": {
         "model_candidates": ["model_yari.pkl"],
         "lowland_name": "安曇野（穂高）",
-        "precip_name": "上高地の降水量の合計",
         "precip_label": "上高地の予想降水量 (mm)",
         "image_candidates": ["yari.JPG", "yari.jpg", "yari.png", "yari.jpeg"],
         "caption": "槍ヶ岳（北アルプス・標高3,180m）"
@@ -34,16 +33,13 @@ mountain_config = {
     "日光白根山 (2,578m)": {
         "model_candidates": ["model_nikko.pkl"],
         "lowland_name": "日光東町",
-        "precip_name": "奥日光の降水量の合計",
         "precip_label": "奥日光の予想降水量 (mm)",
         "image_candidates": ["nikko.jpg", "nikko.JPG", "nikko.png", "nikko.jpeg"],
         "caption": "日光白根山（関東以北最高峰・標高2,578m）"
     },
     "塔ノ岳 (1,491m)": {
-        # tonodake / tounodake どちらのファイル名でも読み込めるように設定
-        "model_candidates": ["model_tonodake.pkl", "model_tonodake.pkl"],
+        "model_candidates": ["model_tonodake.pkl", "model_tounodake.pkl"],
         "lowland_name": "海老名",
-        "precip_name": "丹沢湖の降水量の合計",
         "precip_label": "丹沢湖の予想降水量 (mm)",
         "image_candidates": ["tonodake.jpg", "tonodake.JPG", "tonodake.png", "tonodake.jpeg"],
         "caption": "塔ノ岳（丹沢山地・標高1,491m）"
@@ -52,7 +48,7 @@ mountain_config = {
 
 config = mountain_config[mountain]
 
-# 画像の表示
+# 画像ファイルの探索と表示
 found_image = None
 for img in config["image_candidates"]:
     if os.path.exists(img):
@@ -86,16 +82,11 @@ with col2:
 
 # 5. 判定実行と結果表示
 if st.button("登山安全度を判定する", type="primary", use_container_width=True):
-    # モデルが学習した特徴量名に合わせてDataFrameを作成
-    input_data = pd.DataFrame([{
-        '最高気温(℃)': max_temp,
-        '最低気温(℃)': min_temp,
-        '最大風速(m/s)': max_wind,
-        config['precip_name']: precip
-    }])
+    # 数値配列（NumPy）として渡すことで列名不一致エラーを完全に回避
+    input_features = np.array([[max_temp, min_temp, max_wind, precip]])
     
     # 予測
-    prediction = model.predict(input_data)[0]
+    prediction = model.predict(input_features)[0]
     
     st.divider()
     st.subheader(f"【{mountain}】の判定結果")
