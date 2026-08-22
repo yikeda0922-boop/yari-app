@@ -24,7 +24,7 @@ mountain = st.selectbox(
 # 2. 選択された山に応じた設定
 mountain_config = {
     "槍ヶ岳 (3,180m)": {
-        "model_file": "model_yari.pkl",
+        "model_candidates": ["model_yari.pkl"],
         "lowland_name": "安曇野（穂高）",
         "precip_name": "上高地の降水量の合計",
         "precip_label": "上高地の予想降水量 (mm)",
@@ -32,7 +32,7 @@ mountain_config = {
         "caption": "槍ヶ岳（北アルプス・標高3,180m）"
     },
     "日光白根山 (2,578m)": {
-        "model_file": "model_nikko.pkl",
+        "model_candidates": ["model_nikko.pkl"],
         "lowland_name": "日光東町",
         "precip_name": "奥日光の降水量の合計",
         "precip_label": "奥日光の予想降水量 (mm)",
@@ -40,7 +40,8 @@ mountain_config = {
         "caption": "日光白根山（関東以北最高峰・標高2,578m）"
     },
     "塔ノ岳 (1,491m)": {
-        "model_file": "model_tonodake.pkl",
+        # tonodake / tounodake どちらのファイル名でも読み込めるように設定
+        "model_candidates": ["model_tonodake.pkl", "model_tonodake.pkl"],
         "lowland_name": "海老名",
         "precip_name": "丹沢湖の降水量の合計",
         "precip_label": "丹沢湖の予想降水量 (mm)",
@@ -51,11 +52,11 @@ mountain_config = {
 
 config = mountain_config[mountain]
 
-# 画像ファイルの探索と表示
+# 画像の表示
 found_image = None
-for img_name in config["image_candidates"]:
-    if os.path.exists(img_name):
-        found_image = img_name
+for img in config["image_candidates"]:
+    if os.path.exists(img):
+        found_image = img
         break
 
 if found_image:
@@ -63,11 +64,14 @@ if found_image:
 
 # 3. モデルの読み込み
 @st.cache_resource
-def load_model(filename):
-    with open(filename, 'rb') as f:
-        return pickle.load(f)
+def load_model(candidates):
+    for fn in candidates:
+        if os.path.exists(fn):
+            with open(fn, 'rb') as f:
+                return pickle.load(f)
+    raise FileNotFoundError(f"モデルファイルが見つかりません: {candidates}")
 
-model = load_model(config["model_file"])
+model = load_model(config["model_candidates"])
 
 # 4. 気象データ入力フォーム
 st.subheader(f"📍 {config['lowland_name']}（平地・周辺）の気象予報を入力")
@@ -82,6 +86,7 @@ with col2:
 
 # 5. 判定実行と結果表示
 if st.button("登山安全度を判定する", type="primary", use_container_width=True):
+    # モデルが学習した特徴量名に合わせてDataFrameを作成
     input_data = pd.DataFrame([{
         '最高気温(℃)': max_temp,
         '最低気温(℃)': min_temp,
@@ -89,6 +94,7 @@ if st.button("登山安全度を判定する", type="primary", use_container_wid
         config['precip_name']: precip
     }])
     
+    # 予測
     prediction = model.predict(input_data)[0]
     
     st.divider()
