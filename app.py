@@ -2,53 +2,89 @@ import streamlit as st
 import pickle
 import pandas as pd
 
-# ページの基本設定
-st.set_page_config(page_title="槍ヶ岳 登山安全判定アプリ", page_icon="⛰️")
+# ページ基本設定
+st.set_page_config(
+    page_title="やまびより安全判定アプリ",
+    page_icon="⛰️",
+    layout="centered"
+)
 
-# タイトル
-st.title("⛰️ 槍ヶ岳 登山安全判定アプリ")
+# ヘッダー・タイトル
+st.title("⛰️ やまびより安全判定アプリ")
+st.caption("今日登れる？槍・白根・塔ノ岳の山頂コンディションをAI判定")
+st.write("各山域の気象予報を入力すると、山頂の安全度（Go / Caution / No-Go）を機械学習モデルが予測します。")
 
-# 自身で撮影した槍ヶ岳の写真を表示
-st.image("yari.JPG", caption="槍ヶ岳（標高3,180m）", use_container_width=True)
-st.write("登山口周辺（穂高）の天気予報を入力するだけで、槍ヶ岳山頂の安全度を3段階で判定します。登山計画の判断材料としてご活用ください。")
+# 1. 山の選択
+mountain = st.selectbox(
+    "判定したい山を選択してください",
+    ["槍ヶ岳 (3,180m)", "日光白根山 (2,578m)", "塔ノ岳 (1,491m)"]
+)
 
-# 1. 学習済みモデルの読み込み
+# 2. 選択された山に応じた設定
+mountain_config = {
+    "槍ヶ岳 (3,180m)": {
+        "model_file": "model_yari.pkl",
+        "lowland_name": "安曇野（穂高）",
+        "precip_name": "上高地の降水量の合計",
+        "precip_label": "上高地の予想降水量 (mm)"
+    },
+    "日光白根山 (2,578m)": {
+        "model_file": "model_nikko.pkl",
+        "lowland_name": "日光東町",
+        "precip_name": "奥日光の降水量の合計",
+        "precip_label": "奥日光の予想降水量 (mm)"
+    },
+    "塔ノ岳 (1,491m)": {
+        "model_file": "model_tounodake.pkl",
+        "lowland_name": "海老名",
+        "precip_name": "丹沢湖の降水量の合計",
+        "precip_label": "丹沢湖の予想降水量 (mm)"
+    }
+}
+
+config = mountain_config[mountain]
+
+# 3. モデルの読み込み
 @st.cache_resource
-def load_model():
-    with open('model_yari.pkl', 'rb') as f:
+def load_model(filename):
+    with open(filename, 'rb') as f:
         return pickle.load(f)
 
-model = load_model()
+model = load_model(config["model_file"])
 
-# 2. ユーザー入力フォーム
-st.subheader("📍 穂高（平地）の気象予報を入力")
+# 4. 気象データ入力フォーム
+st.subheader(f"📍 {config['lowland_name']}（平地・周辺）の気象予報を入力")
 
 col1, col2 = st.columns(2)
 with col1:
-    temp_max = st.number_input("最高気温 (℃)", value=28.0, step=0.5)
-    temp_min = st.number_input("最低気温 (℃)", value=18.0, step=0.5)
+    max_temp = st.number_input(f"{config['lowland_name']}の最高気温 (℃)", value=20.0, step=0.5)
+    min_temp = st.number_input(f"{config['lowland_name']}の最低気温 (℃)", value=10.0, step=0.5)
 with col2:
-    wind_max = st.slider("最大風速 (m/s)", min_value=0.0, max_value=30.0, value=4.0, step=0.5)
-    precip = st.slider("降水量の合計 (mm)", min_value=0.0, max_value=100.0, value=0.0, step=1.0)
+    max_wind = st.number_input(f"{config['lowland_name']}の最大風速 (m/s)", value=3.0, step=0.5, min_value=0.0)
+    precip = st.number_input(config["precip_label"], value=0.0, step=1.0, min_value=0.0)
 
-# 3. 判定ボタンと予測
+# 5. 判定実行と結果表示
 if st.button("登山安全度を判定する", type="primary"):
-    # 降水量列名を自動取得
-    precip_col_name = '上高地の降水量の合計' if '上高地の降水量の合計' in model.feature_names_in_ else '降水量'
-
-    input_data = pd.DataFrame([[temp_max, temp_min, wind_max, precip]],
-                              columns=['最高気温', '最低気温', '最大風速', precip_col_name])
-
-    # 予測実行
-    pred = model.predict(input_data)[0]
-
-    # 結果の表示
-    st.markdown("---")
-    st.subheader("🎯 判定結果")
-
-    if pred == 'Go':
-        st.success("🟢 **Go（登山適日）**\n\n岩場・稜線ともに安全に通行できる良好な気象条件です。")
-    elif pred == 'Caution':
-        st.warning("🟡 **Caution（注意・装備徹底）**\n\n雨具必携。稜線の強風や冷え込みに十分警戒してください。")
+    # 学習時と同じ特徴量名・順序でDataFrameを構築
+    input_data = pd.DataFrame([{
+        '最高気温(℃)': max_temp,
+        '最低気温(℃)': min_temp,
+        '最大風速(m/s)': max_wind,
+        config['precip_name']: precip
+    }])
+    
+    # 予測
+    prediction = model.predict(input_data)[0]
+    
+    st.divider()
+    st.subheader(f"【{mountain}】の判定結果")
+    
+    if prediction == "Go":
+        st.success(f"### 判定: 【 {prediction} 】 (登山好適)")
+        st.write("天候条件は良好です。標準的な登山装備を整えて行動してください。")
+    elif prediction == "Caution":
+        st.warning(f"### 判定: 【 {prediction} 】 (注意・警戒)")
+        st.write("低温・雨・強風のいずれかのリスクがあります。悪天候時の撤退判断や防寒・雨具を厳重に準備してください。")
     else:
-        st.error("🔴 **No-Go（登山回避推奨）**\n\n暴風・大雨・氷点下などの重大事故リスクがあります。行動の中止や停滞を推奨します。")
+        st.error(f"### 判定: 【 {prediction} 】 (登山不適・危険)")
+        st.write("荒天または極端な低温の恐れがあります。入山の中止や延期を強く推奨します。")
