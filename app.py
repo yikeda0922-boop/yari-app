@@ -74,11 +74,11 @@ st.subheader(f"📍 {config['lowland_name']}（平地・周辺）の気象予報
 
 col1, col2 = st.columns(2)
 with col1:
-    max_temp = st.number_input(f"{config['lowland_name']}の最高気温 (℃)", value=20.0, step=0.5)
-    min_temp = st.number_input(f"{config['lowland_name']}の最低気温 (℃)", value=10.0, step=0.5)
+    max_temp = st.slider(f"{config['lowland_name']}の最高気温 (℃)", min_value=-20.0, max_value=40.0, value=20.0, step=0.5)
+    min_temp = st.slider(f"{config['lowland_name']}の最低気温 (℃)", min_value=-30.0, max_value=30.0, value=10.0, step=0.5)
 with col2:
-    max_wind = st.number_input(f"{config['lowland_name']}の最大風速 (m/s)", value=3.0, step=0.5, min_value=0.0)
-    precip = st.number_input(config["precip_label"], value=0.0, step=1.0, min_value=0.0)
+    max_wind = st.slider(f"{config['lowland_name']}の最大風速 (m/s)", min_value=0.0, max_value=30.0, value=3.0, step=0.5)
+    precip = st.slider(config["precip_label"], min_value=0.0, max_value=100.0, value=0.0, step=0.5)
 
 # 5. 判定実行と結果表示
 if st.button("登山安全度を判定する", type="primary", use_container_width=True):
