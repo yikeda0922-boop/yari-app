@@ -76,7 +76,6 @@ st.subheader(f"📍 気象予報データの入力（基準観測地: {config['l
 st.info(
     f"💡 **入力の目安**\n"
     f"山頂には気象庁の観測所がないため、麓・周辺地域（**{config['lowland_name']}**など）の天気予報値を入力して山の安全度を機械学習モデルが推測・判定します。\n"
-    f"※ お手元の天気予報アプリや気象庁HPの「{config['lowland_name']}」の予想値をスライダーで設定してください。"
 )
 
 coll, col2 = st.columns(2)
