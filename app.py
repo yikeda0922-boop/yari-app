@@ -101,24 +101,47 @@ with col2:
         min_value=0.0, max_value=100.0, value=0.0, step=0.5,
         help="1日の予想総降水量です。"
     )
-
 # 5. 判定実行と結果表示
-if st.button("登山安全度を判定する", type="primary", use_container_width=True):
-    # 数値配列（NumPy）として渡すことで列名不一致エラーを完全に回避
+if st.button("🏔️ 登山安全度を判定する", type="primary", use_container_width=True):
+    # 数値配列として渡す
     input_features = np.array([[max_temp, min_temp, max_wind, precip]])
     
-    # 予測
+    # 予測実行
     prediction = model.predict(input_features)[0]
     
-    st.divider()
-    st.subheader(f"【{mountain}】の判定結果")
+    st.write("---")
+    st.subheader("📋 判定結果とアドバイス")
     
-    if prediction == "Go":
-        st.success(f"### 判定: 【 {prediction} 】 (登山好適)")
-        st.write("天候条件は良好です。標準的な登山装備を整えて行動してください。")
-    elif prediction == "Caution":
-        st.warning(f"### 判定: 【 {prediction} 】 (注意・警戒)")
-        st.write("低温・雨・強風のいずれかのリスクがあります。悪天候時の撤退判断や防寒・雨具を厳重に準備してください。")
-    else:
-        st.error(f"### 判定: 【 {prediction} 】 (登山不適・危険)")
-        st.write("荒天または極端な低温の恐れがあります。入山の中止や延期を強く推奨します。")
+    # 判定結果ごとの表示分岐
+    if prediction in ['Go', 2, '2']:
+        st.success("### ✅ 判定：Go（登山適正・安全圏）")
+        st.markdown(
+            """
+            * **状況の目安**：周辺の風速・降水・気温ともに安定しており、標準的な登山計画で安全に行動しやすいコンディションです。
+            * **行動の注意点**：
+              * 良好な予報でも山頂周辺の天候急変や局所的な雷雨には留意してください。
+              * 朝晩の冷え込みに備え、防寒具や水分・行動食は十分に携帯しましょう。
+            """
+        )
+        
+    elif prediction in ['Caution', 1, '1']:
+        st.warning("### ⚠️ 判定：Caution（注意・要装備強化）")
+        st.markdown(
+            """
+            * **状況の目安**：小雨・強風、または冷え込み（低温）の可能性があります。
+            * **行動の注意点**：
+              * **装備の点検**：レインウェア（上下）、防寒着、ヘッドライト、予備バッテリーを必ず携行してください。
+              * **計画の見直し**：稜線上では突風や体感温度の低下に注意し、状況が悪化した場合は無理せず途中撤退やエスケープルートを検討してください。
+            """
+        )
+        
+    else:  # No-Go
+        st.error("### ⛔ 判定：No-Go（登山中止・延期推奨）")
+        st.markdown(
+            """
+            * **状況の目安**：大雨、稜線での暴風、または著しい低温・凍結などの荒天リスクが高い状態です。
+            * **行動の注意点**：
+              * **遭難・低体温症・転落のリスクが非常に高いため、登山の延期または中止を強く推奨します。**
+              * 山小屋や登山口までの移動自体に土砂崩れや公共交通機関の運休リスクがないかも確認してください。
+            """
+        )
