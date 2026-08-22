@@ -70,15 +70,38 @@ def load_model(candidates):
 model = load_model(config["model_candidates"])
 
 # 4. 気象データ入力フォーム
-st.subheader(f"📍 {config['lowland_name']}（平地・周辺）の気象予報を入力")
+st.subheader(f"📍 気象予報データの入力（基準観測地: {config['lowland_name']}）")
 
-col1, col2 = st.columns(2)
-with col1:
-    max_temp = st.slider(f"{config['lowland_name']}の最高気温 (℃)", min_value=-20.0, max_value=40.0, value=20.0, step=0.5)
-    min_temp = st.slider(f"{config['lowland_name']}の最低気温 (℃)", min_value=-30.0, max_value=30.0, value=10.0, step=0.5)
+# わかりやすい補足説明ボックスを追加
+st.info(
+    f"💡 **入力の目安**\n"
+    f"山頂には気象庁の観測所がないため、麓・周辺地域（**{config['lowland_name']}**など）の天気予報値を入力して山の安全度を機械学習モデルが推測・判定します。\n"
+    f"※ お手元の天気予報アプリや気象庁HPの「{config['lowland_name']}」の予想値をスライダーで設定してください。"
+)
+
+coll, col2 = st.columns(2)
+with coll:
+    max_temp = st.slider(
+        f"{config['lowland_name']}の最高気温 (℃)", 
+        min_value=-20.0, max_value=40.0, value=20.0, step=0.5,
+        help="予想される日中の最高気温です。"
+    )
+    min_temp = st.slider(
+        f"{config['lowland_name']}の最低気温 (℃)", 
+        min_value=-30.0, max_value=30.0, value=10.0, step=0.5,
+        help="予想される朝晩の最低気温です。"
+    )
 with col2:
-    max_wind = st.slider(f"{config['lowland_name']}の最大風速 (m/s)", min_value=0.0, max_value=30.0, value=3.0, step=0.5)
-    precip = st.slider(config["precip_label"], min_value=0.0, max_value=100.0, value=0.0, step=0.5)
+    max_wind = st.slider(
+        f"{config['lowland_name']}の最大風速 (m/s)", 
+        min_value=0.0, max_value=30.0, value=3.0, step=0.5,
+        help="平地周辺での予想最大風速です。"
+    )
+    precip = st.slider(
+        config["precip_label"], 
+        min_value=0.0, max_value=100.0, value=0.0, step=0.5,
+        help="1日の予想総降水量です。"
+    )
 
 # 5. 判定実行と結果表示
 if st.button("登山安全度を判定する", type="primary", use_container_width=True):
