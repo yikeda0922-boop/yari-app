@@ -40,7 +40,7 @@ mountain_config = {
         "caption": "日光白根山（関東以北最高峰・標高2,578m）"
     },
     "塔ノ岳 (1,491m)": {
-        "model_file": "model_tounodake.pkl",
+        "model_file": "model_tonodake.pkl",
         "lowland_name": "海老名",
         "precip_name": "丹沢湖の降水量の合計",
         "precip_label": "丹沢湖の予想降水量 (mm)",
